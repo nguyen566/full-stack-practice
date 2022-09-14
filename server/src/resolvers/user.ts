@@ -8,6 +8,7 @@ import {
   Field,
   Ctx,
   ObjectType,
+  Query,
 } from "type-graphql";
 import argon2 from "argon2";
 
@@ -43,10 +44,21 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  @Query(() => User, { nullable: true})
+  async me(
+    @Ctx() { req, em }: MyContext
+  ){
+    if(!req.session!.userId) {
+      return null;
+    }
+    const user = await em.findOne(User, { id: req.session!.userId });
+    return user;
+  }
+
   @Mutation(() => UserResponse)
   async register(
     @Arg("options") options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     if (options.username.length <= 2) {
       return {
@@ -93,6 +105,9 @@ export class UserResolver {
       }
       console.log("message: ", err);
     }
+
+    req.session!.userId = user.id;
+
     return {
       user,
     };
@@ -101,7 +116,7 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async login(
     @Arg("options") options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const user = await em.findOne(User, { username: options.username });
     if (!user) {
@@ -119,14 +134,16 @@ export class UserResolver {
     if (!valid) {
       return {
         errors: [
-          {
+          { 
             field: "password",
             message: `Password does not match for user: ${options.username}`,
           },
         ],
       };
     }
-
+    
+    req.session!.userId = user.id;
+    
     return {
       user,
     };

@@ -11,7 +11,9 @@ import { UserResolver } from "./resolvers/user";
 import redis from "redis";
 import connectRedis from "connect-redis";
 import { MyContext } from "./types";
-const session = require("express-session")
+import cors from "cors";
+
+const session = require("express-session");
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
@@ -23,6 +25,13 @@ const main = async () => {
   const redisClient = redis.createClient();
 
   app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+    })
+  );
+
+  app.use(
     session({
       name: "qid",
       store: new RedisStore({
@@ -30,13 +39,13 @@ const main = async () => {
         disableTTL: true,
         disableTouch: true,
       }),
-      cookie: { 
+      cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, //10 years
         httpOnly: true,
         sameSite: "lax", //csrf
         secure: __prod__, //cookie only works in https
       },
-      saveUninitialized: false, 
+      saveUninitialized: false,
       secret: "keyboard cat",
       resave: false,
     })
@@ -51,7 +60,10 @@ const main = async () => {
   });
 
   //sets middle ware to create GraphQL endpoint to express
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({
+    app,
+    cors: false,
+  });
 
   //using underscore can allow you to ignore a parameter
   app.listen(4000, () => {

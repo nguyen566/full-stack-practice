@@ -11,6 +11,7 @@ import {
   Query,
 } from "type-graphql";
 import argon2 from "argon2";
+import { EntityManager } from "@mikro-orm/postgresql";
 
 @InputType()
 class UsernamePasswordInput {
@@ -44,11 +45,9 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
-  @Query(() => User, { nullable: true})
-  async me(
-    @Ctx() { req, em }: MyContext
-  ){
-    if(!req.session!.userId) {
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { req, em }: MyContext) {
+    if (!req.session!.userId) {
       return null;
     }
     const user = await em.findOne(User, { id: req.session!.userId });
@@ -83,14 +82,22 @@ export class UserResolver {
     }
 
     const hashedPassword = await argon2.hash(options.password);
-    const user = em.create(User, {
-      username: options.username,
-      password: hashedPassword,
-      email: options.email,
-    });
+
+    let user;
 
     try {
-      await em.persistAndFlush(user);
+      const result = await (em as EntityManager)
+        .createQueryBuilder(User)
+        .getKnexQuery()
+        .insert({
+          username: options.username,
+          password: hashedPassword,
+          email: options.email,
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returning("*");
+        user = result[0];
     } catch (err) {
       //Duplicate username error
       if (err.code === "23505") {
@@ -134,16 +141,16 @@ export class UserResolver {
     if (!valid) {
       return {
         errors: [
-          { 
+          {
             field: "password",
             message: `Password does not match for user: ${options.username}`,
           },
         ],
       };
     }
-    
+
     req.session!.userId = user.id;
-    
+
     return {
       user,
     };

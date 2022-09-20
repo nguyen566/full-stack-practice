@@ -22,7 +22,7 @@ class UsernamePasswordInput {
   password: string;
 
   @Field()
-  email: string;
+  email?: string;
 }
 
 @ObjectType()

@@ -3,7 +3,12 @@ import { Provider, createClient, dedupExchange, fetchExchange } from "urql";
 import theme from "../theme";
 import { AppProps } from "next/app";
 import { cacheExchange, Cache, QueryInput } from "@urql/exchange-graphcache";
-import { LoginMutation, MeDocument, MeQuery, RegisterMutation } from "../generated/graphql";
+import {
+	LoginMutation,
+	MeDocument,
+	MeQuery,
+	RegisterMutation,
+} from "../generated/graphql";
 
 function betterUpdateQuery<Result, Query>(
 	cache: Cache,
@@ -40,7 +45,7 @@ const client = createClient({
 							}
 						);
 					},
-          register: (_result, args, cache, info) => {
+					register: (_result, args, cache, info) => {
 						betterUpdateQuery<RegisterMutation, MeQuery>(
 							cache,
 							{ query: MeDocument },

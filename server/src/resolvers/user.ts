@@ -162,6 +162,7 @@ export class UserResolver {
 		return new Promise((resolve) =>
     //destroys session in redis using req
 			req.session?.destroy((err) => {
+		//clears cookies in browser using res
         res.clearCookie(COOKIE_NAME);
 				if (err) {
 					console.log(err);

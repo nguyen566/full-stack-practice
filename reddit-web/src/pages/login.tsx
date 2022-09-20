@@ -6,6 +6,8 @@ import { InputField } from "../components/InputField";
 import { useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/toErrorMap";
 import { useRouter } from "next/router";
+import { createUrqlClients } from "../utils/createUrqlClients";
+import { withUrqlClient } from "next-urql";
 
 const Login: React.FC<{}> = ({}) => {
   const router = useRouter();
@@ -64,4 +66,4 @@ const Login: React.FC<{}> = ({}) => {
   );
 };
 
-export default Login;
+export default withUrqlClient(createUrqlClients)(Login);

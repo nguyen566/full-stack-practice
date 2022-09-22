@@ -6,10 +6,10 @@ import {
 	LogoutMutation,
 	MeDocument,
 	MeQuery,
-	RegisterMutation
+	RegisterMutation,
 } from "../generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
-import Router from 'next/router';
+import Router from "next/router";
 
 const errorExchange: Exchange =
 	({ forward }) =>
@@ -19,8 +19,8 @@ const errorExchange: Exchange =
 			tap(({ error }) => {
 				// If the OperationResult has an error, send a request to sentry
 				if (error) {
-					if(error?.message.includes('Not authenticated')){
-						Router.replace('/login');
+					if (error?.message.includes("Not authenticated")) {
+						Router.replace("/login");
 					}
 				}
 			})

@@ -25,7 +25,9 @@ const Login: React.FC<{}> = ({}) => {
 						setErrors(toErrorMap(response.data.login.errors));
 					} else if (response.data?.login.user) {
 						//worked
-						router.push("/");
+						router.push(
+							typeof router.query.next === "string" ? router.query.next : "/"
+						);
 					}
 				}}
 			>
@@ -46,7 +48,7 @@ const Login: React.FC<{}> = ({}) => {
 						</Box>
 						<Flex mt={2}>
 							<NextLink href="/forgot-password">
-								<Link ml='auto'>Forgot password?</Link>
+								<Link ml="auto">Forgot password?</Link>
 							</NextLink>
 						</Flex>
 						<Button

@@ -6,7 +6,11 @@ import { usePostsQuery } from "../generated/graphql";
 import { createUrqlClients } from "../utils/createUrqlClients";
 
 const Index = () => {
-	const [{ data }] = usePostsQuery();
+	const [{ data }] = usePostsQuery({
+		variables: {
+			limit: 10
+		}
+	});
 
 	return (
 		<Layout>

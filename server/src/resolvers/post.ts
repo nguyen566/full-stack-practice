@@ -9,8 +9,10 @@ import {
 	Field,
 	Ctx,
 	UseMiddleware,
+	Int,
 } from "type-graphql";
 import { Post } from "../entities/Post";
+import { getConnection } from "typeorm";
 
 @InputType()
 class PostInput {
@@ -23,8 +25,25 @@ class PostInput {
 @Resolver()
 export class PostResolver {
 	@Query(() => [Post])
-	async posts(): Promise<Post[]> {
-		return Post.find();
+	async posts(
+		//Limit puts a restriction on how many results you get from your query
+		@Arg("limit", () => Int) limit: number,
+		//Selecting all queries after a certain requirement ex. ascending or newest posts
+		@Arg("cursor", () => String, { nullable: true }) cursor: string | null
+	): Promise<Post[]> {
+		const realLimit = Math.min(50, limit);
+		const qb = getConnection()
+			.getRepository(Post)
+			.createQueryBuilder("p")
+			.orderBy('"createdAt"', "DESC")
+			.take(realLimit);
+
+		if (cursor) {
+			qb.where('"createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
+		}
+
+		//.getMany or getOne activates the query
+		return qb.getMany();
 	}
 
 	@Query(() => Post, { nullable: true })

@@ -10,6 +10,9 @@ import {
 	Ctx,
 	UseMiddleware,
 	Int,
+	FieldResolver,
+	Root,
+	ObjectType,
 } from "type-graphql";
 import { Post } from "../entities/Post";
 import { getConnection } from "typeorm";
@@ -22,28 +25,49 @@ class PostInput {
 	text: string;
 }
 
-@Resolver()
+//Checking if there are any more object (posts) returned
+@ObjectType()
+class PaginatedPosts {
+	@Field(() => [Post])
+	posts: Post[];
+	@Field()
+	hasMore: boolean;
+}
+
+@Resolver(Post)
 export class PostResolver {
-	@Query(() => [Post])
+	@FieldResolver(() => String) 
+	textSnippet(@Root() root: Post) {
+		return root.text.slice(0, 50);
+	}
+
+	@Query(() => PaginatedPosts)
 	async posts(
 		//Limit puts a restriction on how many results you get from your query
 		@Arg("limit", () => Int) limit: number,
 		//Selecting all queries after a certain requirement ex. ascending or newest posts
 		@Arg("cursor", () => String, { nullable: true }) cursor: string | null
-	): Promise<Post[]> {
+	): Promise<PaginatedPosts> {
+		//Checking if we are getting more posts
 		const realLimit = Math.min(50, limit);
+		const realLimitPlusOne = realLimit + 1;
 		const qb = getConnection()
 			.getRepository(Post)
 			.createQueryBuilder("p")
 			.orderBy('"createdAt"', "DESC")
-			.take(realLimit);
+			.take(realLimitPlusOne);
 
 		if (cursor) {
 			qb.where('"createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
 		}
 
+		const posts = await qb.getMany();
+
 		//.getMany or getOne activates the query
-		return qb.getMany();
+		return {
+			posts: posts.slice(0, realLimit),
+			hasMore: posts.length === realLimitPlusOne,
+		};
 	}
 
 	@Query(() => Post, { nullable: true })

@@ -14,6 +14,7 @@ import { createConnection } from "typeorm";
 import { Post } from "./entities/Post";
 import { User } from "./entities/User";
 const session = require("express-session");
+import path from "path"; 
 
 const main = async () => {
 	const conn = await createConnection({
@@ -24,8 +25,13 @@ const main = async () => {
 		logging: true,
 		//Automatically creates table for you in typeorm
 		synchronize: true,
-		entities: [Post, User],
+		migrations: [path.join(__dirname, "./migrations/*")],
+		entities: [Post, User], 
 	});
+
+	await conn.runMigrations(); 
+
+	// await Post.delete({});
 
 	const app = express();
 
@@ -56,7 +62,7 @@ const main = async () => {
 			saveUninitialized: false,
 			secret: "keyboard cat",
 			resave: false,
-		})
+		}) 
 	);
 
 	const apolloServer = new ApolloServer({

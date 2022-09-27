@@ -1,8 +1,10 @@
+import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
 import {
 	Box,
 	Button,
 	Flex,
 	Heading,
+	IconButton,
 	Link,
 	Stack,
 	Text,
@@ -16,7 +18,7 @@ import { createUrqlClients } from "../utils/createUrqlClients";
 
 const Index = () => {
 	const [variables, setVariables] = useState({
-		limit: 33,
+		limit: 15,
 		cursor: null as null | string,
 	});
 	const [{ data, fetching }] = usePostsQuery({
@@ -43,10 +45,25 @@ const Index = () => {
 			) : (
 				<Stack spacing={8}>
 					{data!.posts.posts.map((p) => (
-						<Box key={p.id} p={5} shadow="md" borderWidth="1px">
-							<Heading fontSize="xl">{p.title}</Heading>
-							<Text mt={4}>{p.textSnippet}</Text>
-						</Box>
+						<Flex key={p.id} p={5} shadow="md" borderWidth="1px">
+							<Box>
+								<Flex
+									direction={"column"}
+									justifyContent={"center"}
+									mr={4}
+									alignItems={"center"}
+								>
+									<IconButton aria-label="updoot post" icon={<TriangleUpIcon />} />
+									{p.points}
+									<IconButton aria-label="downdoot post" icon={<TriangleDownIcon />} />
+								</Flex>
+							</Box>
+							<Box>
+								<Heading fontSize="xl">{p.title}</Heading>
+								<Text>Posted By:{p.creator.username}</Text>
+								<Text mt={4}>{p.textSnippet}</Text>
+							</Box>
+						</Flex>
 					))}
 				</Stack>
 			)}

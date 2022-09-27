@@ -15,6 +15,7 @@ import { Post } from "./entities/Post";
 import { User } from "./entities/User";
 const session = require("express-session");
 import path from "path"; 
+import { Updoot } from "./entities/Updoot";
 
 const main = async () => {
 	const conn = await createConnection({
@@ -26,7 +27,7 @@ const main = async () => {
 		//Automatically creates table for you in typeorm
 		synchronize: true,
 		migrations: [path.join(__dirname, "./migrations/*")],
-		entities: [Post, User], 
+		entities: [Post, User, Updoot], 
 	});
 
 	await conn.runMigrations(); 

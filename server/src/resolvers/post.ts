@@ -13,10 +13,10 @@ import {
 	FieldResolver,
 	Root,
 	ObjectType,
-	Info,
 } from "type-graphql";
 import { Post } from "../entities/Post";
 import { getConnection } from "typeorm";
+import { Updoot } from "../entities/Updoot";
 
 @InputType()
 class PostInput {
@@ -42,13 +42,40 @@ export class PostResolver {
 		return root.text.slice(0, 50);
 	}
 
+	@Mutation(() => Boolean)
+	@UseMiddleware(isAuth)
+	async vote(
+		@Arg("postId", () => Int) postId: number,
+		@Arg("value", () => Int) value: number,
+		@Ctx() { req }: MyContext
+	) {
+		const isUpdoot = value !== -1;
+		const realValue = isUpdoot ? 1 : -1;
+		const userId = req.session!.userId;
+
+		await getConnection().query(
+			`
+			START TRANSACTION;
+
+			insert into updoot ("userId", "postId", "value")
+			values(${userId}, ${postId}, ${realValue});
+
+			update post 
+			set points = points + ${realValue}
+			where id = ${postId};
+
+			COMMIT;
+			`
+		);
+		return true;
+	}
+
 	@Query(() => PaginatedPosts)
 	async posts(
 		//Limit puts a restriction on how many results you get from your query
 		@Arg("limit", () => Int) limit: number,
 		//Selecting all queries after a certain requirement ex. ascending or newest posts
-		@Arg("cursor", () => String, { nullable: true }) cursor: string | null,
-		@Info() info: any
+		@Arg("cursor", () => String, { nullable: true }) cursor: string | null
 	): Promise<PaginatedPosts> {
 		//Checking if we are getting more posts
 		const realLimit = Math.min(50, limit);
@@ -77,21 +104,6 @@ export class PostResolver {
 			replacements
 		);
 
-		//Optional method of getting connection
-		// const qb = getConnection()
-		// 	.getRepository(Post)
-		// 	.createQueryBuilder("p")
-		// 	.innerJoinAndSelect("p.creator", "u", 'u.id = p."creatorId"')
-		// 	.orderBy('p."createdAt"', "DESC")
-		// 	.take(realLimitPlusOne);
-
-		// if (cursor) {
-		// 	qb.where('p."createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
-		// }
-
-		// const posts = await qb.getMany();
-
-		//.getMany or getOne activates the query
 		return {
 			posts: posts.slice(0, realLimit),
 			hasMore: posts.length === realLimitPlusOne,

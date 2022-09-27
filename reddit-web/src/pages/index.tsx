@@ -13,6 +13,7 @@ import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
 import { useState } from "react";
 import { Layout } from "../components/Layout";
+import { UpdootSection } from "../components/UpdootSection";
 import { usePostsQuery } from "../generated/graphql";
 import { createUrqlClients } from "../utils/createUrqlClients";
 
@@ -47,16 +48,7 @@ const Index = () => {
 					{data!.posts.posts.map((p) => (
 						<Flex key={p.id} p={5} shadow="md" borderWidth="1px">
 							<Box>
-								<Flex
-									direction={"column"}
-									justifyContent={"center"}
-									mr={4}
-									alignItems={"center"}
-								>
-									<IconButton aria-label="updoot post" icon={<TriangleUpIcon />} />
-									{p.points}
-									<IconButton aria-label="downdoot post" icon={<TriangleDownIcon />} />
-								</Flex>
+								<UpdootSection post={p}/>
 							</Box>
 							<Box>
 								<Heading fontSize="xl">{p.title}</Heading>

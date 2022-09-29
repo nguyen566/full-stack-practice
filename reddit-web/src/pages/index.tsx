@@ -1,4 +1,4 @@
-import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
+import { DeleteIcon, TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
 import {
 	Box,
 	Button,
@@ -14,7 +14,7 @@ import NextLink from "next/link";
 import { useState } from "react";
 import { Layout } from "../components/Layout";
 import { UpdootSection } from "../components/UpdootSection";
-import { usePostsQuery } from "../generated/graphql";
+import { useDeletePostMutation, usePostsQuery } from "../generated/graphql";
 import { createUrqlClients } from "../utils/createUrqlClients";
 
 const Index = () => {
@@ -22,9 +22,12 @@ const Index = () => {
 		limit: 15,
 		cursor: null as null | string,
 	});
+
 	const [{ data, fetching }] = usePostsQuery({
 		variables,
 	});
+
+	const [, deletePost] = useDeletePostMutation();
 
 	if (!fetching && !data) {
 		return <div>No posts available</div>;
@@ -36,19 +39,28 @@ const Index = () => {
 				<div>loading....</div>
 			) : (
 				<Stack spacing={8}>
-					{data!.posts.posts.map((p) => (
+					{data!.posts.posts.map((p) => !p ? null : (
 						<Flex key={p.id} p={5} shadow="md" borderWidth="1px">
 							<Box>
 								<UpdootSection post={p} />
 							</Box>
 							<Box>
-								<NextLink href="/post/[id]" as ={`/post/${p.id}`}>
+								<NextLink href="/post/[id]" as={`/post/${p.id}`}>
 									<Link>
 										<Heading fontSize="xl">{p.title}</Heading>
 									</Link>
 								</NextLink>
 								<Text>Posted By:{p.creator.username}</Text>
 								<Text mt={4}>{p.textSnippet}</Text>
+							</Box>
+							<Box ml={"auto"}>
+								<IconButton
+									aria-label="Delete Post"
+									icon={<DeleteIcon />}
+									onClick={() => {
+										deletePost({ id: p.id });
+									}}
+								/>
 							</Box>
 						</Flex>
 					))}

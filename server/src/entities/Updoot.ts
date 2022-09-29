@@ -22,6 +22,9 @@ export class Updoot extends BaseEntity {
 	postId: number;
 
 	//Creates a foreign key
-	@ManyToOne(() => Post, (post) => post.updoots)
+	//Added in cascading delete
+	@ManyToOne(() => Post, (post) => post.updoots, {
+		onDelete: 'CASCADE'
+	})
 	post: Post;
 }

@@ -113,9 +113,9 @@ export class PostResolver {
 		const realLimit = Math.min(50, limit);
 		const realLimitPlusOne = realLimit + 1;
 
-		const replacements: any[] = [realLimitPlusOne,];
+		const replacements: any[] = [realLimitPlusOne];
 
-		if(req.session.userId){
+		if (req.session.userId) {
 			replacements.push(req.session.userId);
 		}
 
@@ -157,7 +157,7 @@ export class PostResolver {
 
 	@Query(() => Post, { nullable: true })
 	post(@Arg("id", () => Int) id: number): Promise<Post | undefined> {
-		return Post.findOne(id, {relations: ["creator"]});
+		return Post.findOne(id, { relations: ["creator"] });
 	}
 
 	@Mutation(() => Post)
@@ -191,8 +191,13 @@ export class PostResolver {
 	}
 
 	@Mutation(() => Boolean)
-	async deletePost(@Arg("id") id: number): Promise<boolean> {
-		await Post.delete(id);
+	@UseMiddleware(isAuth)
+	async deletePost(
+		@Arg("id", () => Int) id: number,
+		@Ctx() { req }: MyContext
+	): Promise<boolean> {
+		//can only delete posts you own using cascading delete
+		await Post.delete({ id, creatorId: req.session.userId });
 		return true;
 	}
 }

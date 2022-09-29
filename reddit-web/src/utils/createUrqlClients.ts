@@ -7,6 +7,7 @@ import {
 } from "urql";
 import { pipe, tap } from "wonka";
 import {
+	DeletePostMutationVariables,
 	LoginMutation,
 	LogoutMutation,
 	MeDocument,
@@ -83,9 +84,11 @@ export const createUrqlClients = (ssrExchange: any, ctx: any) => {
 		url: "http://localhost:4000/graphql",
 		fetchOptions: {
 			credentials: "include" as const,
-			headers: cookie ?{
-				cookie
-			} : undefined,
+			headers: cookie
+				? {
+						cookie,
+				  }
+				: undefined,
 		},
 		exchanges: [
 			dedupExchange,
@@ -100,6 +103,12 @@ export const createUrqlClients = (ssrExchange: any, ctx: any) => {
 				},
 				updates: {
 					Mutation: {
+						deletePost: (_result, args, cache, info) => {
+							cache.invalidate({
+								__typename: "Post",
+								id: (args as DeletePostMutationVariables).id,
+							});
+						},
 						vote: (_result, args, cache, info) => {
 							const { postId, value } = args as VoteMutationVariables;
 							const data = cache.readFragment(

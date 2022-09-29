@@ -8,7 +8,7 @@ interface UpdootSectionProps {
 }
 
 export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
-    //sets loading animation when voting
+	//sets loading animation when voting
 	const [loadingState, setLoadingState] = useState<
 		"updoot-loading" | "downdoot-loading" | "not-loading"
 	>("not-loading");
@@ -25,15 +25,20 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
 				aria-label="updoot post"
 				icon={<TriangleUpIcon />}
 				onClick={async () => {
-                    //sets loading state when clicked
+					if (post.voteStatus === 1) {
+						return;
+					}
+					console.log("voteStatus: ", post.voteStatus)
+					//sets loading state when clicked
 					setLoadingState("updoot-loading");
 					await vote({
 						postId: post.id,
 						value: 1,
 					});
-                    //after await, stops loading state
+					//after await, stops loading state
 					setLoadingState("not-loading");
 				}}
+				colorScheme={post.voteStatus === 1 ? "green" : undefined}
 				isLoading={loadingState === "updoot-loading"}
 			/>
 			{post.points}
@@ -41,6 +46,9 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
 				aria-label="downdoot post"
 				icon={<TriangleDownIcon />}
 				onClick={async () => {
+					if (post.voteStatus === -1) {
+						return;
+					}
 					setLoadingState("downdoot-loading");
 					await vote({
 						postId: post.id,
@@ -48,6 +56,7 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
 					});
 					setLoadingState("not-loading");
 				}}
+				colorScheme={post.voteStatus === -1 ? "red" : undefined}
 				isLoading={loadingState === "downdoot-loading"}
 			/>
 		</Flex>

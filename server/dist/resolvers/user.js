@@ -205,18 +205,15 @@ let UserResolver = class UserResolver {
         });
     }
     logout({ req, res }) {
-        return new Promise((resolve) => {
-            var _a;
-            return (_a = req.session) === null || _a === void 0 ? void 0 : _a.destroy((err) => {
-                res.clearCookie(constants_1.COOKIE_NAME);
-                if (err) {
-                    console.log(err);
-                    resolve(false);
-                    return;
-                }
-                resolve(true);
-            });
-        });
+        return new Promise((resolve) => req.session.destroy((err) => {
+            res.clearCookie(constants_1.COOKIE_NAME);
+            if (err) {
+                console.log(err);
+                resolve(false);
+                return;
+            }
+            resolve(true);
+        }));
     }
 };
 __decorate([

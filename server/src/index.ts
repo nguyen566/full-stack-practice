@@ -8,7 +8,6 @@ import { PostResolver } from "./resolvers/post";
 import { UserResolver } from "./resolvers/user";
 import Redis from "ioredis";
 import connectRedis from "connect-redis";
-import { MyContext } from "./types";
 import cors from "cors";
 import { createConnection } from "typeorm";
 import { Post } from "./entities/Post";
@@ -71,7 +70,7 @@ const main = async () => {
 			resolvers: [HelloResolver, PostResolver, UserResolver],
 			validate: false,
 		}),
-		context: ({ req, res }): MyContext => ({
+		context: ({ req, res }) => ({
 			req,
 			res,
 			redis,

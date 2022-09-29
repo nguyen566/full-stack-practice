@@ -191,7 +191,7 @@ export class UserResolver {
 			console.log("message: ", err);
 		}
 
-		req.session!.userId = user.id;
+		req.session.userId = user.id;
 
 		return {
 			user,
@@ -244,7 +244,7 @@ export class UserResolver {
 	logout(@Ctx() { req, res }: MyContext) {
 		return new Promise((resolve) =>
 			//destroys session in redis using req
-			req.session?.destroy((err) => {
+			req.session.destroy((err) => {
 				//clears cookies in browser using res
 				res.clearCookie(COOKIE_NAME);
 				if (err) {

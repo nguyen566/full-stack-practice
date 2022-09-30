@@ -13,8 +13,10 @@ import { createConnection } from "typeorm";
 import { Post } from "./entities/Post";
 import { User } from "./entities/User";
 const session = require("express-session");
-import path from "path"; 
+import path from "path";
 import { Updoot } from "./entities/Updoot";
+import { createUserLoader } from "./utils/createUserLoader";
+import { createUpdootLoader } from "./utils/createUpdootLoader.ts";
 
 const main = async () => {
 	const conn = await createConnection({
@@ -26,10 +28,10 @@ const main = async () => {
 		//Automatically creates table for you in typeorm
 		synchronize: true,
 		migrations: [path.join(__dirname, "./migrations/*")],
-		entities: [Post, User, Updoot], 
+		entities: [Post, User, Updoot],
 	});
 
-	await conn.runMigrations(); 
+	await conn.runMigrations();
 
 	// await Post.delete({});
 
@@ -62,7 +64,7 @@ const main = async () => {
 			saveUninitialized: false,
 			secret: "keyboard cat",
 			resave: false,
-		}) 
+		})
 	);
 
 	const apolloServer = new ApolloServer({
@@ -74,6 +76,8 @@ const main = async () => {
 			req,
 			res,
 			redis,
+			userLoader: createUserLoader(),
+			updootLoader: createUpdootLoader(),
 		}),
 	});
 

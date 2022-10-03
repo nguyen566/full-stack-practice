@@ -45,8 +45,9 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
 					Create Post
 				</Button>
 				<Button
-					onClick={() => {
-						logout({});
+					onClick={async () => {
+						await logout({});
+						router.reload();
 					}}
 					isLoading={logoutFetching}
 					colorScheme={"teal"}
